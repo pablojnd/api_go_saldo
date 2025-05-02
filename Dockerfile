@@ -24,11 +24,23 @@ WORKDIR /root/
 # Copiar el binario compilado
 COPY --from=build /api_server /api_server
 
-# Copiar el archivo .env (opcional)
-# COPY --from=build /app/.env /.env
+# Crear directorio para archivos de configuración
+RUN mkdir -p /config
+
+# Copiar el archivo .env.example como referencia (no se usa directamente)
+COPY .env.example /config/
 
 # Exponer el puerto configurado en la aplicación
 EXPOSE 8080
+
+# Variables de entorno por defecto (se pueden sobrescribir al ejecutar el contenedor)
+ENV MYSQL_HOST=localhost \
+    MYSQL_PORT=3306 \
+    MYSQL_USER=root \
+    MYSQL_PASSWORD= \
+    MYSQL_DATABASE=BDCrispieri2019 \
+    SERVER_PORT=8080 \
+    GIN_MODE=release
 
 # Ejecutar la aplicación
 CMD ["/api_server"]
