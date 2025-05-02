@@ -14,15 +14,9 @@ func Setup(router *gin.Engine) {
 		})
 	})
 
-	// Agrupar rutas API
+	// Única ruta de la API
 	api := router.Group("/api")
 	{
-		// Rutas para saldos
-		api.GET("/saldos", controllers.GetSaldos)
-		api.GET("/saldos/:codArt", controllers.GetSaldoById)
-
-		// Nuevas rutas
-		api.GET("/saldos2025", controllers.GetSaldos2025)
-		api.GET("/sumasaldo/:codArt", controllers.GetSumaSaldoProducto)
+		api.GET("/allsaldos", controllers.GetAllSaldos)
 	}
 }
