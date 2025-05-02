@@ -20,5 +20,9 @@ func Setup(router *gin.Engine) {
 		// Rutas para saldos
 		api.GET("/saldos", controllers.GetSaldos)
 		api.GET("/saldos/:codArt", controllers.GetSaldoById)
+
+		// Nuevas rutas
+		api.GET("/saldos2025", controllers.GetSaldos2025)
+		api.GET("/sumasaldo/:codArt", controllers.GetSumaSaldoProducto)
 	}
 }
