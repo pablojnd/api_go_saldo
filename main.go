@@ -29,8 +29,9 @@ func main() {
 	// Crear router Gin
 	r := gin.Default()
 
-	// Configurar confianza en proxies - solo confiar en localhost
-	r.SetTrustedProxies([]string{"127.0.0.1"})
+	// En Docker, no necesitamos restringir los proxies
+	// ya que normalmente se ejecuta en un entorno controlado
+	r.SetTrustedProxies(nil)
 
 	// Configurar rutas
 	routes.Setup(r)
