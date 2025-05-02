@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/myuser/api/controllers"
+	"github.com/pablojnd/api_go_saldo/controllers"
 )
 
 // Setup configura todas las rutas de la API

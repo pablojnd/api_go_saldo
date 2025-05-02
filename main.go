@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/myuser/api/config"
-	"github.com/myuser/api/database"
-	"github.com/myuser/api/routes"
+	"github.com/pablojnd/api_go_saldo/config"
+	"github.com/pablojnd/api_go_saldo/database"
+	"github.com/pablojnd/api_go_saldo/routes"
 )
 
 func main() {

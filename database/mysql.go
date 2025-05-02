@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/myuser/api/config"
+	"github.com/pablojnd/api_go_saldo/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

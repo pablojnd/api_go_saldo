@@ -1,4 +1,4 @@
-module github.com/myuser/api
+module github.com/pablojnd/api_go_saldo
 
 go 1.20
 

@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/myuser/api/database"
-	"github.com/myuser/api/models"
+	"github.com/pablojnd/api_go_saldo/database"
+	"github.com/pablojnd/api_go_saldo/models"
 )
 
 // GetSaldos obtiene los saldos con filtros opcionales
