@@ -11,24 +11,27 @@ import (
 // GetAllSaldos obtiene todos los saldos disponibles con opciones de filtrado y paginación
 func GetAllSaldos(c *gin.Context) {
 	type SaldoResponse struct {
-		Anio            int     `json:"Año"`
-		Bod             string  `json:"Bod"`
-		CodigoArticulo  string  `json:"Código_Artículo"`
-		ZetaArticulo    string  `json:"Zeta_Articulo"`
-		DescArticulo    string  `json:"Descripción_Artículo"`
-		UC              int     `json:"U_C"`
-		UM              float64 `json:"U_M"`
-		Cif             float64 `json:"Cif"`
-		Costo           float64 `json:"Costo"`
-		PrecioVta       float64 `json:"Precio_Vta"`
-		SaldoDisponible float64 `json:"Saldo_Disponible"`
+		Anio               int     `json:"Año"`
+		Bod                string  `json:"Bod"`
+		CodigoArticulo     string  `json:"Código_Artículo"`
+		ZetaArticulo       string  `json:"Zeta_Articulo"`
+		DescArticulo       string  `json:"Descripción_Artículo"`
+		UC                 int     `json:"U_C"`
+		UM                 float64 `json:"U_M"`
+		CantidadIngresada  float64 `json:"Cantidad_Ingresada"`
+		Cif                float64 `json:"Cif"`
+		Costo              float64 `json:"Costo"`
+		PrecioVta          float64 `json:"Precio_Vta"`
+		SaldoDisponible    float64 `json:"Saldo_Disponible"`
+		CifPromPonderado   float64 `json:"Cif_Prom_Ponderado,omitempty"`
+		PrecioVtaPonderado float64 `json:"Precio_Vta_Ponderado,omitempty"`
 	}
 
 	// Parámetros de filtro
 	anio := c.DefaultQuery("anio", "2025")
 	codArt := c.Query("cod_art")
 	zetaArt := c.Query("codigo")
-	codBod := c.Query("cod_bod")
+	codBod := c.DefaultQuery("cod_bod", "01") // Bodega 01 por defecto
 
 	// Parámetros de paginación
 	usePagination := c.Query("page") != "" || c.Query("pageSize") != ""
@@ -37,8 +40,8 @@ func GetAllSaldos(c *gin.Context) {
 	offset := (page - 1) * pageSize
 
 	// Construir condiciones WHERE
-	whereConditions := "anio_pro = ? AND (sal_ant + tot_ent - tot_sal - sal_com) > 0"
-	args := []interface{}{anio}
+	whereConditions := "anio_pro = ? AND cod_bod = ? AND (sal_ant + tot_ent - tot_sal - sal_com) > 0"
+	args := []interface{}{anio, codBod}
 
 	// Agregar filtros adicionales si se proporcionaron
 	if codArt != "" {
@@ -49,11 +52,6 @@ func GetAllSaldos(c *gin.Context) {
 	if zetaArt != "" {
 		whereConditions += " AND zet_art = ?"
 		args = append(args, zetaArt)
-	}
-
-	if codBod != "" {
-		whereConditions += " AND cod_bod = ?"
-		args = append(args, codBod)
 	}
 
 	// Contar total de registros para paginación
@@ -81,6 +79,7 @@ func GetAllSaldos(c *gin.Context) {
 			des_adu AS DescArticulo,
 			uni_set AS UC,
 			uni_caj AS UM,
+			can_ing AS CantidadIngresada,
 			cif_uni AS Cif,
 			cos_rea AS Costo,
 			MAX(val_viu) AS PrecioVta,
@@ -119,6 +118,34 @@ func GetAllSaldos(c *gin.Context) {
 			"total":   0,
 		})
 		return
+	}
+
+	// Calcular valores ponderados si se solicitó un producto específico (por código o zeta)
+	if codArt != "" || zetaArt != "" {
+		// Consulta para obtener valores ponderados
+		pondQuery := `
+			SELECT 
+				SUM(cif_uni * can_ing) / SUM(can_ing) AS CifPromPonderado,
+				SUM(val_viu * can_ing) / SUM(can_ing) AS PrecioVtaPonderado
+			FROM 
+				saldos
+			WHERE 
+				` + whereConditions + ` AND can_ing > 0
+		`
+
+		type PonderadosResult struct {
+			CifPromPonderado   float64
+			PrecioVtaPonderado float64
+		}
+
+		var ponderados PonderadosResult
+		database.DB.Raw(pondQuery, args...).Scan(&ponderados)
+
+		// Aplicar los valores ponderados a todos los registros
+		for i := range saldos {
+			saldos[i].CifPromPonderado = ponderados.CifPromPonderado
+			saldos[i].PrecioVtaPonderado = ponderados.PrecioVtaPonderado
+		}
 	}
 
 	// Preparar respuesta
